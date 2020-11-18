@@ -1,0 +1,42 @@
+[   {
+        "ParameterKey": "VPCCIDR",
+        "ParameterValue": "10.0.0.0/16"
+    },
+    {
+        "ParameterKey": "Publicsubnet1",
+        "ParameterValue": "10.0.1.0/24"
+    },
+    {
+        "ParameterKey": "Privatesubnet1",
+        "ParameterValue": "10.0.4.0/24"
+    },
+    {
+        "ParameterKey": "Publicsubnet2",
+        "ParameterValue": "10.0.2.0/24"
+    },
+    {
+        "ParameterKey": "Privatesubnet2",
+        "ParameterValue": "10.0.5.0/24"
+    },
+    {
+        "ParameterKey": "myKey",
+        "ParameterValue": "key_syd"
+    },
+    {
+        "ParameterKey": "InstanceTypeParameter",
+        "ParameterValue": "t2.small"
+    },
+    {
+        "ParameterKey": "ImageId",
+        "ParameterValue": "ami-03061960"
+    },
+    {
+        "ParameterKey": "EmailEndpoint",
+        "ParameterValue": "poojithanekkala@gmail.com"
+    },
+    {
+        "ParameterKey": "TopicName",
+        "ParameterValue": "arn:aws:sns:ap-southeast-2:786678469955:usecase2devops"
+    }
+
+]
