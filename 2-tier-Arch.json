@@ -1,0 +1,558 @@
+Skip to content
+ Enterprise
+Search or jump to…
+
+Pull requests
+Issues
+Explore
+ 
+@pnekkala 
+ODT
+/
+DevOps
+Private
+1
+00
+ Code Issues 0 Pull requests 2 Projects 0 Wiki Insights
+DevOps/2-tier-Arch.json
+@bmanoj bmanoj Update 2-tier-Arch.json
+6f19a93 2 days ago
+@dsalian2@bmanoj
+536 lines (521 sloc)  14.9 KB
+  
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Parameters": {
+        "VPCCIDR": {
+            "Description": "IP address range for VPC",
+            "Type": "String",
+            "AllowedPattern" : "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})"
+        },
+        "Publicsubnet1": {
+            "Description": "IP address range for Subnet",
+            "Type": "String",
+            "AllowedPattern" : "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})"
+        },
+        "Privatesubnet1": {
+            "Description": "IP address range for Subnet",
+            "Type": "String",
+            "Default": "10.0.16.0/20",
+            "AllowedPattern" : "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})"
+        },
+        "Publicsubnet2": {
+            "Description": "IP address range for Subnet",
+            "Type": "String",
+            "Default": "10.0.0.0/20",
+            "AllowedPattern" : "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})"
+        },
+        "Privatesubnet2": {
+            "Description": "IP address range for Subnet",
+            "Type": "String",
+            "Default": "10.0.16.0/20",
+            "AllowedPattern" : "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})"
+        },
+		"myKey": {
+            "Type": "String",
+            "Default": ""
+		},
+		"InstanceTypeParameter": {
+			"Type": "String",
+			"Default": "t2.micro",
+			"AllowedValues": [
+						"t2.micro",
+                        "t3.small",
+                        "t2.small",
+                        "t2.medium"
+					]
+				},
+		"ImageId": {
+			"Type": "AWS::EC2::Image::Id",
+			"Default": ""
+        },
+        "TopicName": {
+            "Type": "String",
+            "Default": "",
+            "Description": "Enter your SNS Topic Name"
+        },
+        "EmailEndpoint":{
+            "Type": "String",
+            "Default": "",
+            "Description" :"Email address to notify that activity has triggered an alarm"
+        }
+	},
+    "Resources": {
+        "vpc1": {
+            "Type": "AWS::EC2::VPC",
+            "Properties": {
+                "CidrBlock": {
+                    "Ref": "VPCCIDR"
+                },
+                "EnableDnsSupport": true,
+                "EnableDnsHostnames": true,
+                "InstanceTenancy": "default",
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "mgmt-us-east-1-vpc"
+                    }
+                ]
+            }
+        },
+        "pusub1": {
+            "Type": "AWS::EC2::Subnet",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "vpc1"
+                },
+                "CidrBlock": {
+                    "Ref": "Publicsubnet1"
+                },
+                "AvailabilityZone": {
+				"Fn::Select": [
+				"0",
+				{
+					"Fn::GetAZs": ""
+				}
+				]
+        }		,
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "mgmt-pub-az-1"
+                    }
+                ]
+            }
+        },
+        "pusub2": {
+            "Type": "AWS::EC2::Subnet",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "vpc1"
+                },
+                "CidrBlock": {
+                    "Ref": "Publicsubnet2"
+                },
+                "AvailabilityZone": {
+				"Fn::Select": [
+				"1",
+				{
+				"Fn::GetAZs": ""
+				}
+			]
+			},
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "mgmt-pub-az-2"
+                    }
+                ]
+            }
+        },
+        "prsub1": {
+            "Type": "AWS::EC2::Subnet",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "vpc1"
+                },
+                "CidrBlock": {
+                    "Ref": "Privatesubnet1"
+                },
+                "AvailabilityZone": {
+				"Fn::Select": [
+				"0",
+				{
+				"Fn::GetAZs": ""
+				}
+				]
+				},
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "mgmt-pri-az-1"
+                    }
+                ]
+            }
+        },
+        "prsub2": {
+            "Type": "AWS::EC2::Subnet",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "vpc1"
+                },
+                "CidrBlock": {
+                    "Ref": "Privatesubnet2"
+                },
+                "AvailabilityZone": {
+				"Fn::Select": [
+				"1",
+				{
+				"Fn::GetAZs": ""
+				}
+				]
+				},
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "mgmt-pri-az-2"
+                    }
+                ]
+            }
+        },
+        "vpc1InternetGateway": {
+            "Type": "AWS::EC2::InternetGateway",
+            "Properties": {
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "vpc1InternetGateway"
+                    }
+                ]
+            }
+        },
+        "AttachGateway1": {
+            "Type": "AWS::EC2::VPCGatewayAttachment",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "vpc1"
+                },
+                "InternetGatewayId": {
+                    "Ref": "vpc1InternetGateway"
+                }
+            }
+        },
+        "vpc1PubRouteTable": {
+            "Type": "AWS::EC2::RouteTable",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "vpc1"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "mgmt-pub-rt"
+                    }
+                ]
+            }
+        },
+        "vpc1PubRoute": {
+            "Type": "AWS::EC2::Route",
+            "DependsOn": "AttachGateway1",
+            "Properties": {
+                "RouteTableId": {
+                    "Ref": "vpc1PubRouteTable"
+                },
+                "DestinationCidrBlock": "0.0.0.0/0",
+                "GatewayId": {
+                    "Ref": "vpc1InternetGateway"
+                }
+            }
+        },
+        "vpc1PublicSubnetRouteTableAssociation1": {
+            "Type": "AWS::EC2::SubnetRouteTableAssociation",
+            "Properties": {
+                "SubnetId": {
+                    "Ref": "pusub1"
+                },
+                "RouteTableId": {
+                    "Ref": "vpc1PubRouteTable"
+                }
+            }
+        },
+        "vpc1PublicSubnetRouteTableAssociation2": {
+            "Type": "AWS::EC2::SubnetRouteTableAssociation",
+            "Properties": {
+                "SubnetId": {
+                    "Ref": "pusub2"
+                },
+                "RouteTableId": {
+                    "Ref": "vpc1PubRouteTable"
+                }
+            }
+        },
+        "NatPublicIp1": {
+            "Type": "AWS::EC2::EIP",
+            "DependsOn": "vpc1",
+            "Properties": {
+                "Domain": "vpc"
+            }
+        },
+        "vpc1NatGateway": {
+            "Type": "AWS::EC2::NatGateway",
+            "Properties": {
+                "AllocationId": {
+                    "Fn::GetAtt": [
+                        "NatPublicIp1",
+                        "AllocationId"
+                    ]
+                },
+                "SubnetId": {
+                    "Ref": "pusub1"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "vpc1NatGateway"
+                    }
+                ]
+            }
+        },
+        "vpc1PriRouteTable": {
+            "Type": "AWS::EC2::RouteTable",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "vpc1"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "mgmt-pri-rt"
+                    }
+                ]
+            }
+        },
+        "vpc1PriRoute": {
+            "Type": "AWS::EC2::Route",
+            "Properties": {
+                "RouteTableId": {
+                    "Ref": "vpc1PriRouteTable"
+                },
+                "DestinationCidrBlock": "0.0.0.0/0",
+                "NatGatewayId": {
+                    "Ref": "vpc1NatGateway"
+                }
+            }
+        },
+        "vpc1PrivateSubnetRouteTableAssociation1": {
+            "Type": "AWS::EC2::SubnetRouteTableAssociation",
+            "Properties": {
+                "SubnetId": {
+                    "Ref": "prsub1"
+                },
+                "RouteTableId": {
+                    "Ref": "vpc1PriRouteTable"
+                }
+            }
+        },
+        "vpc1PrivateSubnetRouteTableAssociation2": {
+            "Type": "AWS::EC2::SubnetRouteTableAssociation",
+            "Properties": {
+                "SubnetId": {
+                    "Ref": "prsub2"
+                },
+                "RouteTableId": {
+                    "Ref": "vpc1PriRouteTable"
+                }
+            }
+        },
+		"loadbalancer": {
+           "Type": "AWS::ElasticLoadBalancingV2::LoadBalancer",
+           "Properties": {
+               "Name": "LOADBALANCER",
+               "Scheme" : "internet-facing",
+               "Subnets": [{ "Ref": "pusub1" },{"Ref":"pusub2"}],
+               "SecurityGroups" : [{"Ref":"ALBSG"}]
+            }
+		},
+       "ALBListener1": {
+           "Type": "AWS::ElasticLoadBalancingV2::Listener",
+           "Properties": {
+               "DefaultActions": [{
+                   "TargetGroupArn": {"Ref": "ALBTargetGroup1"},
+                   "Type": "forward"
+               }],
+               
+               "LoadBalancerArn": {"Ref": "loadbalancer"},
+               "Port": 80,
+               "Protocol": "HTTP"
+           }
+       },
+		"ALBTargetGroup1": {
+			"Type": "AWS::ElasticLoadBalancingV2::TargetGroup",
+			"Properties": {
+			"HealthCheckIntervalSeconds": 30,
+			"HealthCheckTimeoutSeconds": 10,
+			"HealthyThresholdCount": 3,
+			"Name": "Jenkins-ALB-TG",
+			"Port": 80,
+			"Protocol": "HTTP",
+			"UnhealthyThresholdCount": 5,
+			"VpcId": {"Ref": "vpc1"},
+			"Targets": [
+			{ "Id": {"Ref":"PrivateServer1"}, "Port": 80 },
+			{ "Id": {"Ref":"PrivateServer2"}, "Port": 80 }
+			]
+			}
+			},
+      
+		"UnhealthyHostAlarm1": {
+		"Type": "AWS::CloudWatch::Alarm",
+		"Properties": {
+			"AlarmDescription": "Unhealthy Host",
+			"MetricName": "UnHealthyHostCount",
+			"Namespace": "AWS/ApplicationELB",
+			"Statistic": "Average",
+			"Period": 60,
+			"EvaluationPeriods": 1,
+			"Threshold": 0,
+			"AlarmActions" : [{"Ref": "Topic"}],
+			"ComparisonOperator": "GreaterThanThreshold",
+           
+		"Dimensions": [
+       {
+           "Name": "LoadBalancer",
+           "Value":{
+               "Fn::GetAtt":[
+                   "loadbalancer",
+                   "LoadBalancerFullName"]
+           }
+       },
+       {
+           "Name":"TargetGroup",
+           "Value":{"Fn::Select" : [ 5, { "Fn::Split":[":",{"Ref":"ALBTargetGroup1"}]}]}
+       }
+       ]
+    }
+	},
+	    "ALBSG":{
+            "Type":"AWS::EC2::SecurityGroup",
+            "Properties":{
+            "GroupDescription":"securitygroup1",
+            "VpcId":{"Ref":"vpc1"},
+            "SecurityGroupIngress":[
+                {"IpProtocol":"tcp", "FromPort":80, "ToPort":80, "CidrIp":"0.0.0.0/0"}
+                ],
+            "Tags":[{"Key":"Name","Value":"ALBSG"}]
+        }
+      },
+
+
+
+
+    "PrivateServer1": {
+      "Type": "AWS::EC2::Instance",
+      "Properties": {
+          "NetworkInterfaces":[{
+            "DeviceIndex": "0",
+            "GroupSet":[{"Ref":"CICDSG1"}],
+            "SubnetId":{"Ref":"prsub1"}
+        }
+        ],
+        "ImageId": {
+          "Ref": "ImageId"
+        },
+        "InstanceType": {
+          "Ref": "InstanceTypeParameter"
+        },
+        "KeyName": {
+          "Ref": "myKey"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "CICD-Pipeline-Private-Server-1"
+          }
+        ],
+    
+ "UserData": {
+                    "Fn::Base64": {
+                        "Fn::Join": [
+                            "", [
+                                "#!/bin/bash -xe\n", 
+				 "sleep 60\n",    
+                                "yum install -y httpd.x86_64\n",
+				 "sleep 60\n",    
+                                "systemctl start httpd.service\n",
+                                "systemctl enable httpd.service\n",
+                                "echo Hello world from $(hostname -f)> /var/www/html/index.html\n"
+
+                            ]
+                        ]
+                    }
+                }
+      }
+    },
+        "CICDSG1":{
+        "Type":"AWS::EC2::SecurityGroup",
+        "Properties":{
+          "GroupDescription":"securitygroup1",
+          "VpcId":{"Ref":"vpc1"},
+          "SecurityGroupIngress":[
+            {"IpProtocol":"-1", "FromPort":-1, "ToPort":-1, "SourceSecurityGroupId":{"Ref" : "ALBSG"}}
+            ],
+        "Tags":[{"Key":"Name","Value":"CICDSG1"}]
+        }
+      },
+	  
+	  
+	"PrivateServer2": {
+      "Type": "AWS::EC2::Instance",
+      "Properties": {
+          "NetworkInterfaces":[{
+                "DeviceIndex": "0",
+                "GroupSet":[{"Ref":"CICDSG2"}],
+                "SubnetId":{"Ref":"prsub2"}
+        }
+        ],
+        "ImageId": {
+          "Ref": "ImageId"
+        },
+        "InstanceType": {
+          "Ref": "InstanceTypeParameter"
+        },
+        "KeyName": {
+          "Ref": "myKey"
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "CICD-Pipeline-Private-Server-2"
+          }
+        ],
+
+
+    
+ "UserData": {
+                    "Fn::Base64": {
+                        "Fn::Join": [
+                            "", [
+                                "#!/bin/bash -xe\n",   
+                                "sleep 60\n", 
+                                "yum install -y httpd.x86_64\n",
+				"sleep 60\n", 
+                                "systemctl start httpd.service\n",
+                                "systemctl enable httpd.service\n",
+                                "echo Hello world from $(hostname -f)> /var/www/html/index.html\n"
+
+                            ]
+                        ]
+                    }
+                }
+      }
+    },
+        "CICDSG2":{
+        "Type":"AWS::EC2::SecurityGroup",
+        "Properties":{
+          "GroupDescription":"securitygroup1",
+          "VpcId":{"Ref":"vpc1"},
+          "SecurityGroupIngress":[
+            {"IpProtocol":"-1", "FromPort":-1, "ToPort":-1, "SourceSecurityGroupId":{"Ref" : "ALBSG"}}
+            ],
+        "Tags":[{"Key":"Name","Value":"CICDSG2"}]
+        }
+    },
+    "Topic": 
+            {
+                "Type": "AWS::SNS::Topic",
+                "Properties": {
+                    "TopicName" : { "Ref": "TopicName" },
+                    "DisplayName" : { "Ref": "TopicName" },
+                    "Subscription": [
+                        {
+                            "Endpoint": { "Ref": "EmailEndpoint" },
+                            "Protocol": "email"
+                        }
+                    ]
+                }
+           }
+  }
+}
