@@ -1,16 +1,7 @@
 pipeline {
     agent {label "master"}
       stages{
-        stage('install git'){
-            try{
-                sh"sudo yum install git -y"
-                }
-            catch(err)
-                {
-                    sh"echo error"
-                }
-            }
-        stage('code commit')
+       stage('code commit')
         {
         try{
             sh 'git clone https://github.dxc.com/ODT/DevOps.git'
