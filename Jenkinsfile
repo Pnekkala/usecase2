@@ -1,24 +1,78 @@
 pipeline {
-    agent {label "master"}
-      stages{
-       stage('code commit')
-        {
-        try{
-            sh 'git clone https://github.com/Pnekkala/usecase2.git'
-        }
-        catch(err){
-            sh(" echo Error cloning Git bucket")
-        }
-        }
-        stage('Validate') {
-            steps{
-                    sh '/usr/local/bin/cfn-lint ./2-tier-Arch.json'
-            }
-        }
-        stage('Dev') {
-            steps{   
-                    sh"/usr/bin/aws cloudformation create-stack --stack-name test-cicd-two-tier-jenkins-dev --template-body file://two-tier-Arch.json --parameters file://Param-2-tier-Arch.json --region 'ap-southeast-2'"        
-         }
-    }
+
+
+agent any
+
+
+stages {
+
+
+stage('Clone') {
+
+
+steps {
+
+
+sh 'git clone https://github.com/NH-Anusha/demo.git
+
 }
+
+
+}
+
+
+stage('Test') {
+
+
+steps {
+
+
+sh '/usr/local/bin/cfn-lint ./*.json'
+
+
+}
+
+
+}
+
+
+stage('s3upload') {
+
+
+steps {
+
+
+sh '/usr/local/bin/aws s3 cp simples3bucket.json s3://aws-logs-786678469955-ap-southeast-2/simples3bucket.json'
+
+
+}
+
+
+}
+
+
+stage('Deploy') {
+
+
+steps {
+
+
+sh 'cd /usr/local/bin/'
+
+
+sh 'ls'
+
+
+sh "/usr/local/bin/aws cloudformation create-stack --stack-name s3bucket --template-body file://simples3bucket.json --region 'ap-southeast-2'"
+
+
+}
+
+
+}
+
+
+}
+
+
 }
