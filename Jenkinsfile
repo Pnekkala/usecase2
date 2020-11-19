@@ -13,7 +13,7 @@ stage('Clone') {
 steps {
 
 
-sh 'git clone https://github.com/NH-Anusha/demo.git
+sh 'git clone https://github.com/Pnekkala/usecase2.git'
 
 }
 
