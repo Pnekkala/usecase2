@@ -26,7 +26,7 @@ pipeline {
         }
         stage('Dev') {
             steps{   
-                    sh"/usr/bin/aws cloudformation create-stack --stack-name test-cicd-2-tier-jenkins-dev --template-body file://2-tier-Arch.json --parameters file://Param-2-tier-Arch.json --region 'us-east-1'"        
+                    sh"/usr/bin/aws cloudformation create-stack --stack-name test-cicd-2-tier-jenkins-dev --template-body file://2-tier-Arch.json --parameters file://Param-2-tier-Arch.json --region 'ap-southeast-2'"        
          }
     }
 }
