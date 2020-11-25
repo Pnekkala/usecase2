@@ -1,78 +1,34 @@
 pipeline {
-
-
-agent any
-
-
-stages {
-
-
-stage('Clone') {
-
-
-steps {
-
-
-sh 'git clone https://github.com/Pnekkala/usecase2.git'
-
+    agent any
+      stages{
+        stage('install git'){
+            try{
+                sh"sudo yum install git -y"
+                }
+            catch(err)
+                {
+                    sh"echo error"
+                }
+            }
+        stage('code commit')
+        {
+        try{
+            sh 'git clone https://github.com/Pnekkala/usecase2.git'
+        }
+        catch(err){
+            sh(" echo Error cloning Git bucket")
+        }
+        }
+        stage('Validate') {
+            steps{
+                    sh '/usr/local/bin/cfn-lint ./2-tier-Arch.json'
+            }
+        }
+        stage('Dev') {
+            steps{   
+                    sh"/usr/bin/aws cloudformation create-stack --stack-name test-cicd-2-tier-jenkins-dev --template-body file://2-tier-Arch.json --parameters file://Param-2-tier-Arch.json --region 'us-east-1'"        
+         }
+    }
+}
 }
 
-
-}
-
-
-stage('Test') {
-
-
-steps {
-
-
-sh '/usr/local/bin/cfn-lint ./*.json'
-
-
-}
-
-
-}
-
-
-stage('s3upload') {
-
-
-steps {
-
-
-sh '/usr/local/bin/aws s3 cp simples3bucket.json s3://aws-logs-786678469955-ap-southeast-2/simples3bucket.json'
-
-
-}
-
-
-}
-
-
-stage('Deploy') {
-
-
-steps {
-
-
-sh 'cd /usr/local/bin/'
-
-
-sh 'ls'
-
-
-sh "/usr/local/bin/aws cloudformation create-stack --stack-name s3bucket --template-body file://simples3bucket.json --region 'ap-southeast-2'"
-
-
-}
-
-
-}
-
-
-}
-
-
-}
