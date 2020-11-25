@@ -2,13 +2,8 @@ pipeline {
     agent any 
       stages{
         stage('install git'){
-            try {
+            
                 sh "echo 'sudo yum install git -y'"
-                }
-            catch(err)
-                {
-                    sh"echo 'error'"
-                }
             }
         stage('code commit')
         {
