@@ -1,5 +1,5 @@
 pipeline {
-    agent {
+    agent any 
       stages{
         stage('install git'){
             success {
@@ -31,4 +31,4 @@ pipeline {
     }
 }
     }
-}
+
