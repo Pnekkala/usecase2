@@ -34,7 +34,7 @@ pipeline {
         }
         stage('Dev') {
             steps{   
-                    sh"/usr/bin/aws cloudformation create-stack --stack-name test-dev-1 --template-body file://2-tier-Arch.json --parameters file://Param-2-tier-Arch.json --region 'ap-southeast-2'"        
+                    sh"/usr/local/bin/aws cloudformation create-stack --stack-name test-dev-1 --template-body file://2-tier-Arch.json --parameters file://Param-2-tier-Arch.json --region 'ap-southeast-2'"        
          }
     }
 }
