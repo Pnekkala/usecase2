@@ -9,7 +9,7 @@ pipeline {
                 {
                     sh"echo error"
                 }
-            }
+        }
         stage('code commit')
         {
           try {
