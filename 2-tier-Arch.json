@@ -1,26 +1,4 @@
-Skip to content
- Enterprise
-Search or jump to…
-
-Pull requests
-Issues
-Explore
- 
-@pnekkala 
-ODT
-/
-DevOps
-Private
-1
-00
- Code Issues 0 Pull requests 2 Projects 0 Wiki Insights
-DevOps/2-tier-Arch.json
-@bmanoj bmanoj Update 2-tier-Arch.json
-6f19a93 2 days ago
-@dsalian2@bmanoj
-536 lines (521 sloc)  14.9 KB
-  
-{
+  {
     "AWSTemplateFormatVersion": "2010-09-09",
     "Parameters": {
         "VPCCIDR": {
