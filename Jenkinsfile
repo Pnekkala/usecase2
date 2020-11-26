@@ -2,8 +2,13 @@ pipeline {
     agent any 
       stages{
         stage('install git'){
-            
-                sh 'sudo yum install git -y'
+            try{
+                sh"sudo yum install git -y"
+            }
+            catch(err)
+                {
+                    sh"echo error"
+                }
             }
         stage('code commit')
         {
@@ -11,7 +16,7 @@ pipeline {
             sh 'git clone https://github.com/Pnekkala/usecase2.git'
         }
           catch(err) {
-            sh "echo 'Error cloning Git bucket'"
+            sh(" echo Error cloning Git bucket")
         }
         }
         stage('Validate') {
